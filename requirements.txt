@@ -1,3 +1,2 @@
 numpy~=1.22.3
-pandas~=1.2.4
 simpy~=4.0.1
