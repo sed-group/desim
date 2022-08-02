@@ -1,4 +1,4 @@
- from event_simulation import Process, Simulation, Entity, NonTechCost
+from event_simulation import Process, Simulation, Entity, NonTechCost
 from typing import List
 
 import numpy as np
