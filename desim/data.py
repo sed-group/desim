@@ -85,3 +85,9 @@ class SimResults:
             mean_revenues.append(np.mean(revenues))
 
         return mean_revenues
+    
+    def all_max_npv(self):
+        max_npv = []
+        for npv in self.npvs:
+            max_npv.append(npv[-1])
+        return max_npv
