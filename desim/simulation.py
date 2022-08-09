@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import random as r
 import numpy as np
 from typing import Optional
@@ -16,10 +17,10 @@ class Simulation(object):
     #interarrival_time = the rate at which entities will flow in the system
     #interarrival_process = the process at which the entities will start flowing
     #until = the total simulation time
-    def __init__(self, flow_time, flow_rate, flow_process, simulation_runtime, discount_rate, processes, non_tech_processes, non_tech_addition, dsm) -> None:
+    def __init__(self, flow_time, flow_rate, flow_process_id, simulation_runtime, discount_rate, processes, non_tech_processes, non_tech_addition, dsm) -> None:
         self.flow_time = flow_time
         self.interarrival_time = flow_rate
-        self.interarrival_process = flow_process
+        self.interarrival_process_id = flow_process_id
         self.until = simulation_runtime
         self.discount_rate = discount_rate
         self.cum_NPV = [0]
@@ -45,6 +46,7 @@ class Simulation(object):
     #Initializes the lifecycle in each of the entities. Runs everything before the interarrival
     #process as a single entity. R
     def lifecycle(self, env):
+        interarrival_process = list(filter(lambda p: p.id == self.interarrival_process_id, self.processes))
         total_ent_amount = (1 / self.interarrival_time) * self.flow_time
 
         e = Entity(env, self.processes, self.non_tech_costs)
@@ -57,7 +59,7 @@ class Simulation(object):
         
             e = Entity(env, self.processes, self.non_tech_costs)
             self.entities.append(e)
-            env.process(e.lifecycle(self.dsm_after_flow, [self.interarrival_process], total_ent_amount))
+            env.process(e.lifecycle(self.dsm_after_flow, interarrival_process, total_ent_amount))
         
 
         #print('Done')
@@ -110,7 +112,7 @@ class Simulation(object):
         before_dsm = dict()
         dsm = dsm.copy()
         for p in self.processes:
-            if p.name == self.interarrival_process.name:
+            if p.id == self.interarrival_process_id:
                 break
             before_dsm.update({p.name: dsm.pop(p.name)})
         return before_dsm,dsm
@@ -173,20 +175,22 @@ class Entity(object):
     def choose_process_from_row(self, row):
         return r.choices([i for i,_ in enumerate(row)], row, k=1)[0]
 
-
+@dataclass
 class Process(object):
     #@param
+    #id = the id of a process
     #time = the time a process will take in years. 
     #cost = the cost of a process
     #revenue = the revenue of a process
     #name = the name of a process
     #time_format = the unit in which the time is given. 
-    def __init__(self, time, cost, revenue, name, add_non_tech: NonTechCost, time_format: Optional[TimeFormat] = None) -> None:
+    def __init__(self, id, time, cost, revenue, name, add_non_tech: NonTechCost, time_format: Optional[TimeFormat] = None) -> None:
         self.time = self.convert_time_format_to_default(time, time_format)
         self.cost = cost
         self.revenue = revenue
         self.W = 1
         self.WN = False
+        self.id = id
         self.name = name
         self.add_non_tech = add_non_tech
     
