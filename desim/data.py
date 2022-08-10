@@ -60,7 +60,7 @@ class SimResults:
         """
         
         for t, n in zip(self.timesteps[-1], self.mean_npv()):
-            if n >= 0:
+            if n > 0:
                 return t
         
         return -1
