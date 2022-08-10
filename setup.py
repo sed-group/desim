@@ -1,7 +1,7 @@
 import setuptools
 
 setuptools.setup(name='desim',
-version='0.1.0',
+version='0.2.0',
 description='A discrete event simulator',
 url='https://github.com/EppChops/event-sim',
 author='Erik',
