@@ -18,6 +18,7 @@ class TimeFormat(Enum):
     The timeformats that can be chosen for a process. The values are the defaults for the
     simulation (years)
     """
+    MINUTES = 365*34*60
     HOUR = 365*24
     DAY = 365
     WEEK = 52
