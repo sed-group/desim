@@ -17,10 +17,10 @@ class Simulation(object):
     #interarrival_time = the rate at which entities will flow in the system
     #interarrival_process = the process at which the entities will start flowing
     #until = the total simulation time
-    def __init__(self, flow_time, flow_rate, flow_process_id, simulation_runtime, discount_rate, processes, non_tech_processes, non_tech_addition, dsm) -> None:
+    def __init__(self, flow_time, flow_rate, flow_process, simulation_runtime, discount_rate, processes, non_tech_processes, non_tech_addition, dsm) -> None:
         self.flow_time = flow_time
         self.interarrival_time = flow_rate
-        self.interarrival_process_id = flow_process_id
+        self.interarrival_process = flow_process
         self.until = simulation_runtime
         self.discount_rate = discount_rate
         self.cum_NPV = [0]
@@ -46,7 +46,7 @@ class Simulation(object):
     #Initializes the lifecycle in each of the entities. Runs everything before the interarrival
     #process as a single entity. R
     def lifecycle(self, env):
-        interarrival_process = list(filter(lambda p: p.id == self.interarrival_process_id, self.processes))
+        interarrival_process = list(filter(lambda p: p.name == self.interarrival_process, self.processes))
         total_ent_amount = (1 / self.interarrival_time) * self.flow_time
 
         e = Entity(env, self.processes, self.non_tech_costs)
