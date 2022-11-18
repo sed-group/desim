@@ -112,7 +112,7 @@ class Simulation(object):
         before_dsm = dict()
         dsm = dsm.copy()
         for p in self.processes:
-            if p.id == self.interarrival_process_id:
+            if p.name == self.interarrival_process:
                 break
             before_dsm.update({p.name: dsm.pop(p.name)})
         return before_dsm,dsm
