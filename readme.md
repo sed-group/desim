@@ -27,9 +27,10 @@ from desim.simulation import Process
 
 
 dsm = dict({
-    'Design Process': [0, 1, 0]
-    'Testing Process': [0, 0, 1]
-    'Manufacturing Process': [0, 0, 0.2])
+    'Design Process': [0, 1, 0],
+    'Testing Process': [0, 0, 1],
+    'Manufacturing Process': [0, 0, 0.2]
+})
 
 
 processes = [
