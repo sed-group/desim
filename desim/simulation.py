@@ -1,15 +1,14 @@
 from dataclasses import dataclass
 import random as r
 import numpy as np
-from typing import Optional
+from typing import Optional, List
 
 import simpy
 #import pandas as pd
 
 from desim.data import NonTechCost, TimeFormat
 
-TIMESTEP = 0.25
-
+TIMESTEP = 0.25 #TODO change this to be a param in Simulation where it is dependent on the time_format
 
 class Simulation(object):
     #@param:
@@ -17,11 +16,11 @@ class Simulation(object):
     #interarrival_time = the rate at which entities will flow in the system
     #interarrival_process = the process at which the entities will start flowing
     #until = the total simulation time
-    def __init__(self, flow_time, flow_rate, flow_process, simulation_runtime, discount_rate, processes, non_tech_processes, non_tech_addition, dsm) -> None:
+    def __init__(self, flow_time: float, flow_rate: float, flow_process: str, simulation_runtime: float, discount_rate: float, processes, non_tech_processes, non_tech_addition, dsm, time_format: TimeFormat) -> None:
         self.flow_time = flow_time
-        self.interarrival_time = flow_rate
+        self.interarrival_time = 1 / (flow_rate * time_format.value) #Causes the interarrival time to be in years. 
         self.interarrival_process = flow_process
-        self.until = simulation_runtime
+        self.until = simulation_runtime / time_format.value #Causes the runtime to be in years. 
         self.discount_rate = discount_rate
         self.cum_NPV = [0]
         self.total_costs = [0]
@@ -33,6 +32,7 @@ class Simulation(object):
         self.non_tech_revenues = sum([p.revenue for p in non_tech_processes])
         self.add_non_tech = non_tech_addition
         self.dsm_before_flow, self.dsm_after_flow = self.get_dsm_separation(dsm)
+        self.time_format = time_format
         #r.seed(0) #Remove for production
         #np.random.seed(0) #Remove for production
 
@@ -44,7 +44,7 @@ class Simulation(object):
         env.run(until=self.until)
     
     #Initializes the lifecycle in each of the entities. Runs everything before the interarrival
-    #process as a single entity. R
+    #process as a single entity. 
     def lifecycle(self, env):
         interarrival_process = list(filter(lambda p: p.name == self.interarrival_process, self.processes))
         total_ent_amount = (1 / self.interarrival_time) * self.flow_time
@@ -218,3 +218,9 @@ class Process(object):
         
         self.W = 0
 
+@dataclass
+class NonTechnicalProcess(object):
+  def __init__(self, name: str, cost: float, revenue: float) -> None:
+      self.name = name
+      self.cost = cost
+      self.revenue = revenue
