@@ -18,7 +18,7 @@ class Simulation(object):
     #until = the total simulation time
     def __init__(self, flow_time: float, flow_rate: float, flow_process: str, simulation_runtime: float, discount_rate: float, processes, non_tech_processes, non_tech_addition, dsm, time_format: TimeFormat) -> None:
         self.flow_time = flow_time
-        self.interarrival_time = 1 / (flow_rate * time_format.value) #Causes the interarrival time to be in years. 
+        self.interarrival_time =  0 if flow_rate <= 0 else 1 / (flow_rate * time_format.value) #Causes the interarrival time to be in years. 
         self.interarrival_process = flow_process
         self.until = simulation_runtime / time_format.value #Causes the runtime to be in years. 
         self.discount_rate = discount_rate
@@ -47,8 +47,8 @@ class Simulation(object):
     #process as a single entity. 
     def lifecycle(self, env):
         interarrival_process = list(filter(lambda p: p.name == self.interarrival_process, self.processes))
-        total_ent_amount = (1 / self.interarrival_time) * self.flow_time
-
+        total_ent_amount =  0 if self.interarrival_time <= 0 else (1 / self.interarrival_time) * self.flow_time
+        
         e = Entity(env, self.processes, self.non_tech_costs)
         self.entities.append(e)
         yield env.process(e.lifecycle(self.dsm_before_flow, [self.processes[0]], 1))

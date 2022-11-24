@@ -45,7 +45,7 @@ class Des(object):
       sim.run_simulation()
 
 
-      return sim.time_steps, sim.cum_NPV, sim.total_costs, sim.total_revenue
+      return SimResults('No Design', processes, [sim.time_steps], [sim.cum_NPV], [sim.total_costs], [sim.total_revenue])
 
   def run_monte_carlo_simulation(self, flow_time: float, flow_rate: float, 
       flow_start_process: str, processes: List[Process], 
@@ -76,13 +76,15 @@ class Des(object):
       total_revenue = []
 
       for _ in range(runs):
-          time_s, cum_npv, total_c, total_r = self.run_simulation(flow_time, flow_rate, flow_start_process, 
-                    processes, non_tech_processes, non_tech_costs, dsm, time_format, discount_rate, until)
+        sim = Simulation(flow_time, flow_rate, flow_start_process, until, discount_rate,
+                    processes, non_tech_processes, non_tech_costs, dsm, time_format)
+        sim.run_simulation()
+         
 
-          time_steps.append(time_s)
-          cumulative_NPV.append(cum_npv)
-          total_costs.append(total_c)
-          total_revenue.append(total_r)
+        time_steps.append(sim.time_steps)
+        cumulative_NPV.append(sim.cum_NPV)
+        total_costs.append(sim.total_costs)
+        total_revenue.append(sim.total_revenue)
       
       
       
@@ -119,7 +121,7 @@ class Des(object):
 
       pool = mp.Pool(mp.cpu_count())
 
-      mp_processes = [pool.apply_async(func=self.run_simulation, args=(flow_time, flow_rate, flow_start_process, processes, 
+      mp_processes = [pool.apply_async(func=self.__help_run_simulation, args=(flow_time, flow_rate, flow_start_process, processes, 
         non_tech_processes, non_tech_costs, dsm, time_format, discount_rate, until)) for _ in range(runs)]
 
       res = [f.get() for f in mp_processes]
@@ -132,3 +134,18 @@ class Des(object):
 
 
       return SimResults('No Design', processes, time_steps, cumulative_NPV, total_costs, total_revenue)
+
+  def __help_run_simulation(self, flow_time: float, flow_rate: float, 
+      flow_start_process: str, processes: List[Process], 
+      non_tech_processes, non_tech_costs: NonTechCost, dsm: dict, time_format: TimeFormat,
+      discount_rate=0.08, until = 100):
+      """
+      Helper function for the parallelization module in this class. 
+      
+      """
+
+      sim = Simulation(flow_time, flow_rate, flow_start_process, until, discount_rate,
+                    processes, non_tech_processes, non_tech_costs, dsm, time_format)
+      sim.run_simulation()
+
+      return sim.time_steps, sim.cum_NPV, sim.total_costs, sim.total_revenue

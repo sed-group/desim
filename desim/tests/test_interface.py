@@ -50,7 +50,8 @@ def test_monte_carlo_simulation():
   discount_rate = 0.08
   dsm = create_simple_dsm(processes)
 
-  results = simulation.run_monte_carlo_simulation(flow_time, flow_rate, flow_start_process, processes, non_tech_processes, NonTechCost.CONTINOUSLY, dsm, TimeFormat.YEAR)
+  results = simulation.run_monte_carlo_simulation(flow_time, flow_rate, flow_start_process, processes, 
+      non_tech_processes, NonTechCost.CONTINOUSLY, dsm, TimeFormat.YEAR, discount_rate, until, 10)
   
   assert len(results.mean_npv()) > 0
 
