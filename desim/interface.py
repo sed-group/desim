@@ -121,7 +121,7 @@ class Des(object):
 
       pool = mp.Pool(mp.cpu_count())
 
-      mp_processes = [pool.apply_async(func=self.__help_run_simulation, args=(flow_time, flow_rate, flow_start_process, processes, 
+      mp_processes = [pool.apply_async(func=self.help_run_simulation, args=(flow_time, flow_rate, flow_start_process, processes, 
         non_tech_processes, non_tech_costs, dsm, time_format, discount_rate, until)) for _ in range(runs)]
 
       res = [f.get() for f in mp_processes]
@@ -135,7 +135,7 @@ class Des(object):
 
       return SimResults('No Design', processes, time_steps, cumulative_NPV, total_costs, total_revenue)
 
-  def __help_run_simulation(self, flow_time: float, flow_rate: float, 
+  def help_run_simulation(self, flow_time: float, flow_rate: float, 
       flow_start_process: str, processes: List[Process], 
       non_tech_processes, non_tech_costs: NonTechCost, dsm: dict, time_format: TimeFormat,
       discount_rate=0.08, until = 100):

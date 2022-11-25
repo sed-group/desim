@@ -6,11 +6,7 @@ from desim.data import TimeFormat, NonTechCost
 
 from typing import List
 
-spec = importlib.util.spec_from_file_location("Simulation", "desim/simulation.py")
-
-sim = importlib.util.module_from_spec(spec)
-
-spec.loader.exec_module(sim)
+import desim.simulation as sim
 
 def create_simple_dsm(processes: List[sim.Process]) -> dict:
   l = len(processes)

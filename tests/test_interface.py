@@ -4,18 +4,21 @@ import importlib.util
 from desim.data import TimeFormat, NonTechCost
 from typing import List
 
-spec = importlib.util.spec_from_file_location("interface", "desim/interface.py")
+#spec = importlib.util.spec_from_file_location("interface", "desim/interface.py")
 
-des = importlib.util.module_from_spec(spec)
+#des = importlib.util.module_from_spec(spec)
 
-spec.loader.exec_module(des)
+#spec.loader.exec_module(des)
 
+import desim.interface as des
 
-spec = importlib.util.spec_from_file_location("simulation", "desim/simulation.py")
+#spec = importlib.util.spec_from_file_location("simulation", "desim/simulation.py")
 
-sim = importlib.util.module_from_spec(spec)
+#sim = importlib.util.module_from_spec(spec)
 
-spec.loader.exec_module(sim)
+#spec.loader.exec_module(sim)
+
+import desim.simulation as sim
 
 def create_simple_dsm(processes: List[sim.Process]) -> dict:
   l = len(processes)
@@ -55,6 +58,7 @@ def test_monte_carlo_simulation():
   
   assert len(results.mean_npv()) > 0
 
+
 def test_multiprocessing():
   simulation = des.Des()
 
@@ -78,6 +82,8 @@ def test_multiprocessing():
   discount_rate = 0.08
   dsm = create_simple_dsm(processes)
 
-  results = simulation.run_parallell_simulations(flow_time, flow_rate, flow_start_process, processes, non_tech_processes, NonTechCost.CONTINOUSLY, dsm, TimeFormat.YEAR)
+  results = simulation.run_parallell_simulations(flow_time, flow_rate, flow_start_process, 
+    processes, non_tech_processes, NonTechCost.CONTINOUSLY, dsm, TimeFormat.YEAR, discount_rate,
+    until, runs=10)
   
   assert len(results.mean_npv()) > 0
