@@ -57,6 +57,7 @@ def test_monte_carlo_simulation():
       non_tech_processes, NonTechCost.CONTINOUSLY, dsm, TimeFormat.YEAR, discount_rate, until, 10)
   
   assert len(results.mean_npv()) > 0
+  assert results.mean_npv()[-1] < 0
 
 
 def test_multiprocessing():
