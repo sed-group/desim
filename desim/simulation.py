@@ -55,7 +55,7 @@ class Simulation(object):
         
         end_flow = env.now + self.flow_time
         while env.now < end_flow:
-            yield env.timeout(self.generate_interarrival())
+            yield env.timeout(self.interarrival_time)
         
             e = Entity(env, self.processes, self.non_tech_costs)
             self.entities.append(e)
