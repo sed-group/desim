@@ -16,7 +16,7 @@ class Simulation(object):
     #interarrival_time = the rate at which entities will flow in the system
     #interarrival_process = the process at which the entities will start flowing
     #until = the total simulation time
-    def __init__(self, flow_time: float, flow_rate: int, flow_process: str, simulation_runtime: float, discount_rate: float, processes, non_tech_processes, non_tech_addition, dsm, time_format: TimeFormat) -> None:
+    def __init__(self, flow_time: float, flow_rate: float, flow_process: str, simulation_runtime: float, discount_rate: float, processes, non_tech_processes, non_tech_addition, dsm, time_format: TimeFormat) -> None:
         self.flow_time = flow_time
         self.flow_rate = flow_rate
         self.interarrival_time = 0 if flow_rate <= 0 else 1 / (flow_rate * time_format.value) #Causes the interarrival time to be in years.
@@ -56,7 +56,7 @@ class Simulation(object):
         
         end_flow = env.now + self.flow_time
         while env.now < end_flow:
-            for i in range(self.flow_rate):
+            for i in range(int(self.flow_rate)):
                 e = Entity(env, self.processes, self.non_tech_costs)
                 self.entities.append(e)
                 env.process(e.lifecycle(self.dsm_after_flow, interarrival_process, total_ent_amount))
