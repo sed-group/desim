@@ -184,6 +184,37 @@ def test_simulation_with_probability():
     assert len(simulation.total_revenue) > 10
 
 
+def test_simulation_with_probability_rework():
+    processes, non_tech_processes = get_processes()
+
+    flow_time = 3
+    flow_rate = 260
+    flow_start_process = "Testing"
+    until = 30
+    discount_rate = 0.08
+
+    dsm = {
+        "Start":                ["X", 1, 0, 0, 0, 0, 0],
+        "Architectural design": [0, "X", 1, 0, 0, 0, 0],
+        "Verification":         [0, 0.9, "X", 0.1, 0, 0, 0],
+        "Testing":              [0, 0, 0, "X", 0.5, 0.5, 0],
+        "Manufacturing":        [0, 0, 0, 0, "X", 1, 0],
+        "Integration":          [0, 0, 0, 0, 0, "X", 1],
+        "End":                  [0, 0, 0, 0, 0, 0, "X"]
+    }
+
+    simulation = sim.Simulation(flow_time, flow_rate, flow_start_process, until,
+                                discount_rate, processes, non_tech_processes, NonTechCost.CONTINOUSLY, dsm,
+                                TimeFormat.YEAR)
+
+    simulation.run_simulation()
+
+    assert len(simulation.time_steps) > 10
+    assert len(simulation.cum_NPV) > 10
+    assert len(simulation.total_costs) > 10
+    assert len(simulation.total_revenue) > 10
+
+
 def test_sim_time_units():
     processes = [
         sim.Process(1, 20, 20000, 0, '20 months', NonTechCost.CONTINOUSLY, TimeFormat.MONTH),
