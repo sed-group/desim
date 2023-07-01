@@ -1,8 +1,7 @@
 from typing import List
-import numpy as np
 import multiprocessing as mp
 from desim.data import SimResults, TimeFormat
-from desim.simulation import Process, Simulation, Entity, NonTechCost
+from desim.simulation import Process, Simulation, NonTechCost
 
 
 class Des(object):
