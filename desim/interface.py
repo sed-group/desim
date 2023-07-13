@@ -113,7 +113,12 @@ class Des(object):
         total_costs = []
         total_revenue = []
 
-        mp.set_start_method('spawn')
+        # Try/Catch because it can only be set once.
+        try:
+            # Important! If not set, the server will be terminated after simulation is complete.
+            mp.set_start_method('spawn')
+        except RuntimeError:
+            pass
         pool = mp.Pool(mp.cpu_count())
 
         mp_processes = [
