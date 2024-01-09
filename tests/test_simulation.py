@@ -1,5 +1,4 @@
 from desim.data import TimeFormat, NonTechCost
-
 from typing import List
 
 import desim.simulation as sim

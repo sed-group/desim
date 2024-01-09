@@ -1,23 +1,6 @@
-import pytest
-import importlib.util
-
 from desim.data import TimeFormat, NonTechCost
 from typing import List
-
-#spec = importlib.util.spec_from_file_location("interface", "desim/interface.py")
-
-#des = importlib.util.module_from_spec(spec)
-
-#spec.loader.exec_module(des)
-
 import desim.interface as des
-
-#spec = importlib.util.spec_from_file_location("simulation", "desim/simulation.py")
-
-#sim = importlib.util.module_from_spec(spec)
-
-#spec.loader.exec_module(sim)
-
 import desim.simulation as sim
 
 def create_simple_dsm(processes: List[sim.Process]) -> dict:
