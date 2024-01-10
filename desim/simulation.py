@@ -62,18 +62,16 @@ class Simulation(object):
                 self.entities.append(e)
                 env.process(e.lifecycle(self.dsm_after_flow, interarrival_process, total_ent_amount))
             yield env.timeout(1)
-        self.cum_NPV = self.cum_NPV[1:]  # Removes the first 0
-        self.time_steps = self.time_steps[1:]
 
 
     # Observes the total time, cost, revenue, and NPV for each entity in each timestep.
-    def observe_costs(self, env):  
+    def observe_costs(self, env):
 
         if self.add_non_tech == NonTechCost.LUMP_SUM:
             self.total_costs[0] += self.non_tech_costs
 
         while True:
-
+            yield env.timeout(TIMESTEP)
             if self.add_non_tech == NonTechCost.CONTINOUSLY:
                 self.add_static_costs_to_entities()
 
@@ -82,7 +80,8 @@ class Simulation(object):
             self.time_steps.append(env.now)
 
             self.calculate_NPV(self.total_costs, self.total_revenue, self.time_steps)
-            yield env.timeout(TIMESTEP)
+            
+            
 
     # Generates the waiting time as interarrival rate on an exponential distribution
     def generate_interarrival(self):
@@ -133,14 +132,9 @@ class Entity(object):
     def lifecycle(self, dsm, current_processes, ent_amount):
         active_activities = current_processes
         while len(active_activities) > 0:
-            min_time = active_activities[
-                0].time  # For yielding in case there are multiple processes running in parallell
             for activity in active_activities:
-                self.env.process(activity.run_process(self.env, self, ent_amount, self.total_non_tech_costs))
-                if activity.time < min_time:
-                    min_time = activity.time
-
-            yield self.env.timeout(min_time)
+                yield self.env.process(activity.run_process(self.env, self, ent_amount, self.total_non_tech_costs))
+            
             active_activities = self.find_active_activities(dsm, active_activities)  # Find subsequent activities
 
 
@@ -197,24 +191,29 @@ class Process(object):
     # Runs a process and adds the cost and the revenue to the entity
     def run_process(self, env, entity, ent_amount, non_tech_costs):
         # Calculate the number of timesteps based on the total time and the timestep
-        num_steps = max(1, int(self.time * self.W / TIMESTEP))
+        if self.time > 0:
+            num_steps = self.time * self.W / TIMESTEP
 
-        # Calculate the cost and revenue to be added at each timestep
-        cost_per_step = self.cost / num_steps
-        revenue_per_step = self.revenue / num_steps
+            # Calculate the cost and revenue to be added at each timestep
+            cost_per_step = self.cost / num_steps
+            revenue_per_step = self.revenue / num_steps
+            
+            for _ in range(int(num_steps)):
+                entity.cost += cost_per_step
+                entity.revenue += revenue_per_step
 
-        for _ in range(num_steps):
-            entity.cost += cost_per_step
-            entity.revenue += revenue_per_step
+                if self.add_non_tech == NonTechCost.TO_TECHNICAL_PROCESS:
+                    added_cost = (non_tech_costs * self.time / (sum([p.time for p in entity.processes]) * ent_amount)) / num_steps
+                    entity.cost += added_cost
+                yield env.timeout(TIMESTEP)  # Wait for the timestep duration
+            
+        else: # If the time is 0, then the process is instantaneous
+            entity.cost += self.cost
+            entity.revenue += self.revenue
 
             if self.add_non_tech == NonTechCost.TO_TECHNICAL_PROCESS:
-                added_cost = (non_tech_costs * self.time / (sum([p.time for p in entity.processes]) * ent_amount)) / num_steps
+                added_cost = non_tech_costs * self.time / (sum([p.time for p in entity.processes]) * ent_amount)
                 entity.cost += added_cost
-
-            yield env.timeout(TIMESTEP)  # Wait for the timestep duration
-
-        self.W = 0
-
 
 @dataclass
 class NonTechnicalProcess(object):
