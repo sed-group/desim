@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 
 def simulation_sequential_example():
     simulation = des.Des()
-    """
     processes = [
         sim.Process(
             1, 5, 200, 0, "Architectural design", NonTechCost.TO_TECHNICAL_PROCESS, TimeFormat.YEAR
@@ -21,22 +20,7 @@ def simulation_sequential_example():
             4, 0.25, 0, 50, "Operation", NonTechCost.TO_TECHNICAL_PROCESS, TimeFormat.YEAR
         ),
     ]
-    """
-    processes = [
-        sim.Process(
-            1, 5, 200, 0, "Architectural design", NonTechCost.CONTINOUSLY, TimeFormat.YEAR
-        ),
-        sim.Process(
-            2, 5, 0, 50, "Implementation", NonTechCost.CONTINOUSLY, TimeFormat.YEAR
-        ),
-        sim.Process(
-            3, 0.2, 0, 100, "Integration", NonTechCost.CONTINOUSLY, TimeFormat.YEAR
-        ),
-        sim.Process(
-            4, 10, 0, 100, "Operation", NonTechCost.CONTINOUSLY, TimeFormat.YEAR
-        ),
-    ]
-    non_tech_processes = [sim.NonTechnicalProcess("Project portfolio management", 0, 0)]
+    non_tech_processes = [sim.NonTechnicalProcess("Project portfolio management", 50, 0)]
 
     dsm = {
         "Start":                ["X", 1, 0, 0, 0, 0],
@@ -47,11 +31,11 @@ def simulation_sequential_example():
         "End":                  [0, 0, 0, 0, 0, 0]
     }
 
-    flow_time = 1
-    flow_rate = 2
+    flow_time = 5
+    flow_rate = 1
     flow_start_process = "Implementation"
-    until = 30
-    discount_rate = 0
+    until = 15
+    discount_rate = 0.08
 
     simulation = simulation.run_simulation(
         flow_time,
@@ -59,7 +43,7 @@ def simulation_sequential_example():
         flow_start_process,
         processes,
         non_tech_processes,
-        NonTechCost.CONTINOUSLY,
+        NonTechCost.TO_TECHNICAL_PROCESS,
         dsm,
         TimeFormat.YEAR,
         discount_rate,
@@ -72,7 +56,5 @@ def simulation_sequential_example():
     plt.plot(simulation.timesteps[0], simulation.npvs[0])
     plt.ylabel("NPV")
     plt.show()
-
-
 
 simulation_sequential_example()
