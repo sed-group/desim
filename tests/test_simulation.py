@@ -23,7 +23,7 @@ def get_processes():
     processes = [
         sim.Process(1, 5, 100000, 0, 'Architectural design', NonTechCost.CONTINOUSLY, TimeFormat.MONTH),
         sim.Process(2, 0, 0, 0, 'Verification', NonTechCost.CONTINOUSLY),
-        sim.Process(3, 1, 30000, 0, 'Testing', NonTechCost.CONTINOUSLY, TimeFormat.YEAR),
+        sim.Process(3, 0.8, 30000, 0, 'Testing', NonTechCost.CONTINOUSLY, TimeFormat.YEAR),
         sim.Process(4, 3, 200, 1000, 'Manufacturing', NonTechCost.CONTINOUSLY, TimeFormat.HOUR),
         sim.Process(5, 1, 100, 10000, 'Integration', NonTechCost.CONTINOUSLY, TimeFormat.DAY),
     ]

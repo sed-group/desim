@@ -8,7 +8,7 @@ import simpy
 from desim.data import NonTechCost, TimeFormat
 from desim.helper import isfloat
 
-TIMESTEP = 0.25 # TODO change this to be a param in Simulation where it is dependent on the time_format
+TIMESTEP = 0.25
 
 class Simulation(object):
     # @param:
@@ -51,9 +51,10 @@ class Simulation(object):
         interarrival_process = list(filter(lambda p: p.name == self.interarrival_process, self.processes))
         total_ent_amount = 0 if self.interarrival_time <= 0 else (1 / self.interarrival_time) * self.flow_time
 
-        e = Entity(env, self.processes, self.non_tech_costs)
-        self.entities.append(e)
-        yield env.process(e.lifecycle(self.dsm_before_flow, [self.processes[0]], 1))
+        if self.interarrival_process != self.processes[0].name:
+            e = Entity(env, self.processes, self.non_tech_costs)
+            self.entities.append(e)
+            yield env.process(e.lifecycle(self.dsm_before_flow, [self.processes[0]], 1))
 
         end_flow = env.now + self.flow_time
         while env.now < end_flow:
@@ -132,7 +133,6 @@ class Entity(object):
     def lifecycle(self, dsm, current_processes, ent_amount):
         active_activities = current_processes
         while len(active_activities) > 0:
-            print("activites", [a.name for a in active_activities])
             for activity in active_activities:
                 yield self.env.process(activity.run_process(self.env, self, ent_amount, self.total_non_tech_costs))
             active_activities = self.find_active_activities(dsm, active_activities)  # Find subsequent activities
