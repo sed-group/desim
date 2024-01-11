@@ -238,10 +238,10 @@ def test_sim_time_units():
 
     sim2.run_simulation()
 
-    assert sim1.time_steps[-1] == 2.25
+    assert sim1.time_steps[-1] == 2.5
     assert sim1.total_costs[-1] == 21000
     assert sim1.total_revenue[-1] == 2000
 
-    assert sim2.time_steps[-1] == 2.25 or 2
+    assert sim2.time_steps[-1] == 2.25
     assert sim2.total_costs[-1] == 21000
     assert sim2.total_revenue[-1] == 2000
