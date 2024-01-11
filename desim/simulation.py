@@ -1,16 +1,14 @@
 from dataclasses import dataclass
 import random as r
 import numpy as np
-from typing import Optional, List
+from typing import Optional
 
 import simpy
-# import pandas as pd
 
 from desim.data import NonTechCost, TimeFormat
 from desim.helper import isfloat
 
-TIMESTEP = 0.25  # TODO change this to be a param in Simulation where it is dependent on the time_format
-
+TIMESTEP = 0.25
 
 class Simulation(object):
     # @param:
@@ -39,15 +37,13 @@ class Simulation(object):
         self.add_non_tech = non_tech_addition
         self.dsm_before_flow, self.dsm_after_flow = self.get_dsm_separation(dsm)
         self.time_format = time_format
-        # r.seed(0) #Remove for production
-        # np.random.seed(0) #Remove for production
 
     # Sets up the simpy environment and runs the simulation
     def run_simulation(self):
         env = simpy.Environment()
         env.process(self.lifecycle(env))
         env.process(self.observe_costs(env))
-        env.run(until=self.until)
+        env.run(until=self.until + TIMESTEP)
 
     # Initializes the lifecycle in each of the entities. Runs everything before the interarrival
     # process as a single entity.
@@ -55,33 +51,29 @@ class Simulation(object):
         interarrival_process = list(filter(lambda p: p.name == self.interarrival_process, self.processes))
         total_ent_amount = 0 if self.interarrival_time <= 0 else (1 / self.interarrival_time) * self.flow_time
 
-        e = Entity(env, self.processes, self.non_tech_costs)
-        self.entities.append(e)
-        yield env.process(e.lifecycle(self.dsm_before_flow, [self.processes[0]], 1))
+        if self.interarrival_process != self.processes[0].name:
+            e = Entity(env, self.processes, self.non_tech_costs)
+            self.entities.append(e)
+            yield env.process(e.lifecycle(self.dsm_before_flow, [self.processes[0]], 1))
 
         end_flow = env.now + self.flow_time
         while env.now < end_flow:
-            for i in range(int(self.flow_rate)):
+            for _ in range(int(self.flow_rate)):
                 e = Entity(env, self.processes, self.non_tech_costs)
                 self.entities.append(e)
                 env.process(e.lifecycle(self.dsm_after_flow, interarrival_process, total_ent_amount))
             yield env.timeout(1)
 
-        # print('Done')
 
     # Observes the total time, cost, revenue, and NPV for each entity in each timestep.
-    def observe_costs(self, env):  # TODO fix calculation of NPV. Currently it's bonkers
-        # total_costs = [0]
-        # total_revenue = [0]
+    def observe_costs(self, env):
 
         if self.add_non_tech == NonTechCost.LUMP_SUM:
-            # print('Lump sum')
             self.total_costs[0] += self.non_tech_costs
 
         while True:
-
+            yield env.timeout(TIMESTEP)
             if self.add_non_tech == NonTechCost.CONTINOUSLY:
-                # print('Added static costs')
                 self.add_static_costs_to_entities()
 
             self.total_costs.append(sum([e.cost for e in self.entities]))
@@ -89,7 +81,8 @@ class Simulation(object):
             self.time_steps.append(env.now)
 
             self.calculate_NPV(self.total_costs, self.total_revenue, self.time_steps)
-            yield env.timeout(TIMESTEP)
+            
+            
 
     # Generates the waiting time as interarrival rate on an exponential distribution
     def generate_interarrival(self):
@@ -98,12 +91,11 @@ class Simulation(object):
     def add_static_costs_to_entities(self):  # Adds the costs of the non-technical processes to all active entities.
         for e in self.entities:
             e.cost += self.non_tech_costs * TIMESTEP / (
-                        len(self.entities) * self.until)  # This works in the margin of 0.00000002 euros
+                        len(self.entities) * (self.until)) # This works in the margin of 0.00000002 euros
 
     def calculate_NPV(self, total_costs, total_revenue, time_steps):
         timestep_revenue = total_revenue[len(time_steps) - 1] - total_revenue[len(time_steps) - 2]
         timestep_cost = total_costs[len(time_steps) - 1] - total_costs[len(time_steps) - 2]
-        # print(timestep_revenue, timestep_cost)
 
         net_revenue = timestep_revenue - timestep_cost  # Cashflow for the timestep
         npv = net_revenue / ((1 + self.discount_rate) ** time_steps[-1])
@@ -115,10 +107,10 @@ class Simulation(object):
         dsm = dsm.copy()
         for key, row in dsm.items():
             dsm[key] = [float(x) if isfloat(x) else 0 for x in row]
-        for p in self.processes:
-            if p.name == self.interarrival_process:
+        for i in range(len(self.processes)):
+            if self.processes[i].name == self.interarrival_process:
                 break
-            before_dsm.update({p.name: dsm.pop(p.name)})
+            before_dsm.update({self.processes[i-1].name: dsm.pop(self.processes[i-1].name)})
         return before_dsm, dsm
 
 
@@ -129,9 +121,9 @@ class Entity(object):
     def __init__(self, env, processes, total_non_tech_costs) -> None:
         self.env = env
         self.processes = processes
-        self.total_time = [0]
-        self.total_cost = [0]
-        self.total_revenue = [0]
+        self.total_time = []
+        self.total_cost = []
+        self.total_revenue = []
         self.cost = 0
         self.revenue = 0
         self.total_non_tech_costs = total_non_tech_costs
@@ -141,23 +133,10 @@ class Entity(object):
     def lifecycle(self, dsm, current_processes, ent_amount):
         active_activities = current_processes
         while len(active_activities) > 0:
-            # print(f'curr time {self.env.now}')
-            min_time = active_activities[
-                0].time  # For yielding in case there are multiple processes running in parallell
             for activity in active_activities:
-                self.env.process(activity.run_process(self.env, self, ent_amount, self.total_non_tech_costs))
-                if activity.time < min_time:
-                    min_time = activity.time
-
-            # start_time = self.env.now
-            yield self.env.timeout(min_time)
-
-            # for activity in active_activities: #This loop is probably unneccessary since we do not check W anywhere atm
-            #    if activity.W > 0:
-            #        activity.W = (self.env.now - start_time) / activity.time
+                yield self.env.process(activity.run_process(self.env, self, ent_amount, self.total_non_tech_costs))
             active_activities = self.find_active_activities(dsm, active_activities)  # Find subsequent activities
 
-        # print(f'Entity: {self} done, total time: {sum([p.time for p in self.processes])}')
 
     # Finds the active processes for the lifecycle based on the dsm and the current state
     # That the lifecycle is in.
@@ -211,24 +190,30 @@ class Process(object):
 
     # Runs a process and adds the cost and the revenue to the entity
     def run_process(self, env, entity, ent_amount, non_tech_costs):
-        # print(f'Started working on process: {self.name}')
-        yield env.timeout(self.time * self.W)
-        # print(f'Time after step in lifecycle: {env.now}')
-        # non_tech_costs = total_non_tech_cost * self.time / (process_time * amount_of_entities) #Add this to the total cost in order to add non tech costs to processes
+        # Calculate the number of timesteps based on the total time and the timestep
+        if self.time >= TIMESTEP:
+            num_steps = int(self.time * self.W / TIMESTEP)
 
-        entity.cost += self.cost
-        entity.revenue += self.revenue
+            # Calculate the cost and revenue to be added at each timestep
+            cost_per_step = self.cost / num_steps
+            revenue_per_step = self.revenue / num_steps
+            
+            for _ in range(num_steps):
+                entity.cost += cost_per_step
+                entity.revenue += revenue_per_step
 
-        if self.add_non_tech == NonTechCost.TO_TECHNICAL_PROCESS:
-            # print('Process add')
-            added_cost = non_tech_costs * self.time / (sum([p.time for p in entity.processes]) * ent_amount)
-            entity.cost += added_cost
+                if self.add_non_tech == NonTechCost.TO_TECHNICAL_PROCESS:
+                    added_cost = (non_tech_costs * self.time / (sum([p.time for p in entity.processes]) * ent_amount)) / num_steps
+                    entity.cost += added_cost
+                yield env.timeout(TIMESTEP)  # Wait for the timestep duration
+        else: # Add full value if under TIMESTEP. If the time is 0, then the process is instantaneous
+            entity.cost += self.cost
+            entity.revenue += self.revenue
 
-        # total_cost.append(total_cost[-1] + self.cost)
-        # total_revenue.append(total_revenue[-1] + self.revenue)
-
-        self.W = 0
-
+            if self.add_non_tech == NonTechCost.TO_TECHNICAL_PROCESS:
+                added_cost = non_tech_costs * self.time / (sum([p.time for p in entity.processes]) * ent_amount)
+                entity.cost += added_cost
+            yield env.timeout(self.time)
 
 @dataclass
 class NonTechnicalProcess(object):
