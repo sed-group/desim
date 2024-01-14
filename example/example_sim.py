@@ -45,11 +45,11 @@ def simulation_sequential_example():
         "End":                  [0, 0, 0, 0, 0, 0]
     }
 
-    flow_time = 1
-    flow_rate = 1
+    flow_time = 5
+    flow_rate = 10
     flow_start_process = "Implementation"
     until = 30
-    discount_rate = 0.0
+    discount_rate = 0.08
 
     simulation = simulation.run_simulation(
         flow_time,
