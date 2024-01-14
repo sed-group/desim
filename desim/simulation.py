@@ -58,11 +58,23 @@ class Simulation(object):
 
         end_flow = env.now + self.flow_time
         while env.now < end_flow:
-            for _ in range(int(self.flow_rate * TIMESTEP)):
+            if self.flow_rate >= 1/TIMESTEP:
+                n_entities = int(self.flow_rate * TIMESTEP)
+                timeout = TIMESTEP
+            else:
+                n_entities = self.flow_rate
+                timeout = 1
+            for _ in range(n_entities):
+                mod_entities = self.flow_rate % (1/timeout)
+                if env.now % 1 == 0 and mod_entities != 0:
+                    for _ in range(int(mod_entities)): # Run the entities that are left over from converting n_entities to an integer
+                        e = Entity(env, self.processes, self.non_tech_costs)
+                        self.entities.append(e)
+                        env.process(e.lifecycle(self.dsm_after_flow, interarrival_process, total_ent_amount))
                 e = Entity(env, self.processes, self.non_tech_costs)
                 self.entities.append(e)
                 env.process(e.lifecycle(self.dsm_after_flow, interarrival_process, total_ent_amount))
-            yield env.timeout(TIMESTEP)
+            yield env.timeout(timeout)
 
 
     # Observes the total time, cost, revenue, and NPV for each entity in each timestep.
