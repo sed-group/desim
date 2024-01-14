@@ -1,7 +1,7 @@
 import setuptools
 
 setuptools.setup(name='desim-tool',
-version='0.4.6',
+version='0.4.7',
 description='A discrete event simulator',
 url='https://github.com/sed-group/desim',
 author='Erik Berg, Oscar Bennet',

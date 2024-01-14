@@ -62,9 +62,9 @@ class Simulation(object):
                 n_entities = int(self.flow_rate * TIMESTEP)
                 timeout = TIMESTEP
             else:
-                n_entities = self.flow_rate
+                n_entities = int(self.flow_rate)
                 timeout = 1
-            for _ in range(n_entities):
+            for _ in range(int(n_entities)):
                 mod_entities = self.flow_rate % (1/timeout)
                 if env.now % 1 == 0 and mod_entities != 0:
                     for _ in range(int(mod_entities)): # Run the entities that are left over from converting n_entities to an integer
