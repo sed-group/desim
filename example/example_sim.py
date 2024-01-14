@@ -22,7 +22,7 @@ def simulation_sequential_example():
     ]
     processes2 = [
         sim.Process(
-            1, 5, 500, 0, "Architectural design", NonTechCost.TO_TECHNICAL_PROCESS, TimeFormat.YEAR
+            1, 5, 250, 0, "Architectural design", NonTechCost.TO_TECHNICAL_PROCESS, TimeFormat.YEAR
         ),
         sim.Process(
             2, 5, 0, 50, "Implementation", NonTechCost.TO_TECHNICAL_PROCESS, TimeFormat.YEAR
@@ -45,11 +45,11 @@ def simulation_sequential_example():
         "End":                  [0, 0, 0, 0, 0, 0]
     }
 
-    flow_time = 5
-    flow_rate = 10
+    flow_time = 1
+    flow_rate = 1
     flow_start_process = "Implementation"
     until = 30
-    discount_rate = 0.08
+    discount_rate = 0.0
 
     simulation = simulation.run_simulation(
         flow_time,
