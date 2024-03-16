@@ -164,16 +164,27 @@ class Entity(object):
                      transitions])):  # Checks if all rows are 0, if that is the case then there is nothing more to be done after this process
                 continue
 
-            process_index = self.choose_process_from_row(transitions)  # Select the process index from its row
-            if process_index >= len(self.processes):  # Simulation has reached the end
+            next_processes = []
+            self.choose_process_from_row(transitions, next_processes)  # Select the process index from its row
+            #if process_index >= len(self.processes):  # Simulation has reached the end
+            #    continue
+            
+            if any([p >= len(self.processes) for p in next_processes]):
                 continue
-            active_activities.append(self.processes[process_index])
+            
+            active_activities += [self.processes[p] for p in next_processes]
 
         return active_activities
 
     # Selects a process index from a row of transitional probabilities
-    def choose_process_from_row(self, row):
-        return r.choices([i for i, _ in enumerate(row)], row, k=1)[0] - 1  # -1 because the first column is the start
+    def choose_process_from_row(self, row, next_processes):
+        if sum(row) > 1:
+            process_index = r.choices([i for i, _ in enumerate(row)], row, k=1)[0] - 1
+            next_processes.append(process_index)
+            row[process_index + 1] = 0
+            self.choose_process_from_row(row, next_processes)
+        elif sum(row) > 0:
+            next_processes.append(r.choices([i for i, _ in enumerate(row)], row, k=1)[0] - 1)  # -1 because the first column is the start
 
 
 @dataclass

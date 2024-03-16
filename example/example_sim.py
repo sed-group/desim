@@ -38,8 +38,8 @@ def simulation_sequential_example():
 
     dsm = {
         "Start":                ["X", 1, 0, 0, 0, 0],
-        "Architectural design": [0, "X", 1, 0, 0, 0],
-        "Implementation":       [0, 0, "X", 1, 0, 0],
+        "Architectural design": [0, "X", 1, 1, 0, 0],
+        "Implementation":       [0, 0, "X", 0, 1, 0],
         "Integration":          [0, 0, 0, "X", 1, 0],
         "Operation":            [0, 0, 0, 0, "X", 1],
         "End":                  [0, 0, 0, 0, 0, 0]
@@ -48,7 +48,7 @@ def simulation_sequential_example():
     flow_time = 1
     flow_rate = 1
     flow_start_process = "Architectural design"
-    until = 10
+    until = 20
     discount_rate = 0
 
     simulation = simulation.run_simulation(
