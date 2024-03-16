@@ -51,10 +51,10 @@ class Simulation(object):
         interarrival_process = list(filter(lambda p: p.name == self.interarrival_process, self.processes))
         total_ent_amount = 0 if self.interarrival_time <= 0 else (1 / self.interarrival_time) * self.flow_time
 
-        #if self.interarrival_process != self.processes[0].name:
-        e = Entity(env, self.processes, self.non_tech_costs)
-        self.entities.append(e)
-        yield env.process(e.lifecycle(self.dsm_before_flow, [self.processes[0]], 1))
+        if self.interarrival_process != self.processes[0].name:
+            e = Entity(env, self.processes, self.non_tech_costs)
+            self.entities.append(e)
+            yield env.process(e.lifecycle(self.dsm_before_flow, [self.processes[0]], 1))
 
         end_flow = env.now + self.flow_time
         while env.now < end_flow:
