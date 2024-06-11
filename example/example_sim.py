@@ -22,34 +22,34 @@ def simulation_sequential_example():
     ]
     processes2 = [
         sim.Process(
-            1, 5, 250, 0, "Architectural design", NonTechCost.TO_TECHNICAL_PROCESS, TimeFormat.YEAR
+            1, 1, 0, 10, "Architectural design", NonTechCost.TO_TECHNICAL_PROCESS, TimeFormat.YEAR
         ),
         sim.Process(
-            2, 5, 0, 50, "Implementation", NonTechCost.TO_TECHNICAL_PROCESS, TimeFormat.YEAR
+            2, 2, 10, 0, "Implementation", NonTechCost.TO_TECHNICAL_PROCESS, TimeFormat.YEAR
         ),
         sim.Process(
-            3, 1, 0, 100, "Integration", NonTechCost.TO_TECHNICAL_PROCESS, TimeFormat.YEAR
+            3, 3, 0, 10, "Integration", NonTechCost.TO_TECHNICAL_PROCESS, TimeFormat.YEAR
         ),
         sim.Process(
-            4, 10, 0, 100, "Operation", NonTechCost.TO_TECHNICAL_PROCESS, TimeFormat.YEAR
+            4, 4, 0, 10, "Operation", NonTechCost.TO_TECHNICAL_PROCESS, TimeFormat.YEAR
         ),
     ]
     non_tech_processes = [sim.NonTechnicalProcess("Project portfolio management", 0, 0)]
 
     dsm = {
         "Start":                ["X", 1, 0, 0, 0, 0],
-        "Architectural design": [0, "X", 1, 0, 0, 0],
-        "Implementation":       [0, 0, "X", 1, 0, 0],
+        "Architectural design": [0, "X", 1, 1, 0, 0],
+        "Implementation":       [0, 0, "X", 0, 1, 0],
         "Integration":          [0, 0, 0, "X", 1, 0],
         "Operation":            [0, 0, 0, 0, "X", 1],
         "End":                  [0, 0, 0, 0, 0, 0]
     }
 
-    flow_time = 5
-    flow_rate = 10
-    flow_start_process = "Implementation"
-    until = 30
-    discount_rate = 0.08
+    flow_time = 1
+    flow_rate = 1
+    flow_start_process = "Architectural design"
+    until = 20
+    discount_rate = 0
 
     simulation = simulation.run_simulation(
         flow_time,
